@@ -1,0 +1,27 @@
+# DhanHQ API - Use latest available stable version
+dhanhq==2.0.2
+
+# MongoDB support with async capability
+pymongo[srv]==4.6.1
+motor==3.3.2
+
+# Configuration and environment management
+python-dotenv==1.0.1
+
+# Async and scheduling support
+# Note: asyncio is built into Python 3.4+, no need to install separately
+aiohttp==3.9.3
+apscheduler==3.10.4
+
+# Reliability and retry logic
+tenacity==8.2.3
+
+# WebSocket support - Let dhanhq manage its own websockets version
+# websockets will be installed automatically by dhanhq with the correct version
+
+# Data processing - Use compatible versions
+pandas>=2.2.1
+python-dateutil>=2.8.2
+
+# Timezone support - Use compatible version
+pytz>=2024.1

@@ -1,149 +1,109 @@
 # Dhan Data Lake v2
 
-A comprehensive data lake solution for Dhan HQ trading platform that fetches, processes, and stores market data with real-time capabilities.
+A portfolio-grade market-data ingestion platform that demonstrates reliable batch loading, idempotent PostgreSQL upserts, quarantine handling, dbt transformations, orchestration, automated tests, and containerized local execution.
 
-## 🚀 Features
+The repository contains two layers:
 
-- **Real-time Market Data**: Live streaming of market data from Dhan HQ API
-- **Historical Data Management**: Efficient fetching and storage of historical market data
-- **Instrument Master Management**: Comprehensive instrument universe management
-- **Data Integrity**: Built-in data validation and integrity checks
-- **Scalable Architecture**: Modular design with MongoDB backend
-- **Scheduled Operations**: Automated data fetching and processing
-- **Rate Limiting**: Intelligent API rate limiting to prevent throttling
+- `src/dhan_data_lake/`: the credential-free production-data-platform increment.
+- The original MongoDB/DhanHQ modules: preserved as legacy integration work and not described as production-ready until their empty modules and live-API tests are completed.
 
-## 📁 Project Structure
+## What is implemented
 
+- Typed OHLCV validation with timezone-aware timestamps.
+- Deterministic natural keys: `(security_id, interval, event_time)`.
+- Idempotent PostgreSQL `INSERT ... ON CONFLICT` ingestion.
+- Failed-record quarantine with the original payload and reason.
+- Credential-free sample dataset for repeatable demonstrations.
+- dbt staging and daily market-summary models with quality tests.
+- An Airflow DAG that invokes the same tested CLI entrypoint.
+- Docker and Docker Compose configuration.
+- Standard-library unit tests and GitHub Actions CI.
+- Architecture, deployment, lineage, and operational documentation.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[CSV sample or approved source] --> B[Python validation]
+    B -->|valid| C[Deduplicate by natural key]
+    B -->|invalid| Q[Quarantine table]
+    C --> D[PostgreSQL raw_market_bars]
+    D --> E[dbt staging]
+    E --> F[dbt daily market summary]
+    G[Airflow DAG] --> B
+    H[GitHub Actions] --> I[Unit tests and compile checks]
 ```
-dhan-data-lake-v2/
-├── config/                 # Configuration management
-├── core/                   # Core functionality (scheduler, universe manager)
-├── data_fetchers/          # Data fetching modules
-├── database/               # Database operations and collections
-├── docs/                   # Documentation
-├── logs/                   # Application logs
-├── tests/                  # Test suites
-├── utils/                  # Utility functions
-├── requirements.txt        # Python dependencies
-└── README.md              # This file
-```
 
-## 🛠️ Installation
+## Quick start without credentials
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd dhan-data-lake-v2
-   ```
+Python 3.11+ is required.
 
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Environment Setup**
-   Create a `.env` file with your Dhan HQ credentials:
-   ```env
-   DHAN_CLIENT_ID=your_client_id
-   DHAN_ACCESS_TOKEN=your_access_token
-   MONGODB_URI=your_mongodb_connection_string
-   ```
-
-## 🔧 Configuration
-
-The application uses a modular configuration system. Key configuration files:
-
-- `config/settings.py`: Main application settings
-- `config/__init__.py`: Configuration initialization
-
-## 📊 Usage
-
-### Starting the Data Lake
 ```bash
-python main.py
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+python -m dhan_data_lake.cli --input data/sample/market_bars.csv --dry-run
+python -m pytest -q
 ```
 
-### Running Tests
+The dry run validates, deduplicates, and reports the sample data without requiring PostgreSQL or DhanHQ credentials.
+
+## PostgreSQL demonstration
+
 ```bash
-python -m pytest tests/
+cp .env.example .env
+docker compose up --build --abort-on-container-exit
 ```
 
-### Data Integrity Check
+The loader waits for PostgreSQL, applies `sql/001_init.sql`, ingests the sample data, and exits. Rerun the loader to demonstrate that the natural key prevents duplicate rows:
+
 ```bash
-python data_integrity_check.py
+docker compose run --rm loader
 ```
 
-## 🗄️ Database Collections
+## dbt
 
-The system manages several MongoDB collections:
+Install the optional analytics dependencies and copy the example profile:
 
-- **Instrument Master**: Complete instrument universe
-- **Historical Data**: Time-series market data
-- **Real-time Data**: Live market feeds
-- **System Logs**: Application and error logs
+```bash
+python -m pip install -r requirements-analytics.txt
+mkdir -p ~/.dbt
+cp analytics/profiles.yml.example ~/.dbt/profiles.yml
+cd analytics
+dbt build
+```
 
-## 🔄 Scheduled Operations
+## Airflow
 
-The scheduler automatically handles:
-- Daily instrument universe updates
-- Historical data fetching
-- Data integrity checks
-- System maintenance tasks
+`orchestration/dags/market_data_pipeline.py` is intentionally thin. It calls the tested CLI rather than duplicating ingestion logic. Mount the repository into an Airflow environment and set `DATA_INPUT_PATH` and `DATABASE_URL`.
 
-## 📈 API Integration
+## Quality gates
 
-Integrates with Dhan HQ API for:
-- Market data streaming
-- Historical data retrieval
-- Instrument information
-- Real-time quotes
+The project is ready to describe as completed only when all of the following pass:
 
-## 🧪 Testing
+```bash
+python -m compileall -q src tests
+python -m pytest -q
+docker compose config
+```
 
-Comprehensive test suite covering:
-- Configuration validation
-- Core functionality
-- Database operations
-- API integrations
+Live DhanHQ ingestion remains a separate acceptance gate because it requires user-owned credentials and market-hours validation.
 
-## 📝 Logging
+## Documentation
 
-Detailed logging system with:
-- Application logs
-- Error tracking
-- Performance monitoring
-- Debug information
+- [Architecture and lineage](docs/architecture.md)
+- [Deployment](docs/deployment.md)
+- [Operational runbook](docs/runbook.md)
+- [API and CLI reference](docs/api_reference.md)
 
-## 🤝 Contributing
+## Security
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+- Never commit `.env`, access tokens, database passwords, or exported account data.
+- Use read-only DhanHQ credentials for ingestion where the API permits.
+- The sample dataset is synthetic and contains no account or customer information.
 
-## 📄 License
+## Honest resume wording
 
-This project is proprietary software. All rights reserved.
+> Built a credential-free market-data ingestion pipeline with Python, PostgreSQL, idempotent upserts, quarantine handling, dbt quality tests, Docker, and CI; documented lineage and operational recovery procedures.
 
-## 🆘 Support
-
-For support and questions:
-- Check the documentation in `docs/`
-- Review the API reference
-- Contact the development team
-
-## 🔄 Version History
-
-- **v2.0**: Complete rewrite with improved architecture
-- **v1.0**: Initial release
-
----
-
-**Note**: This is a production-ready data lake solution designed for high-frequency trading data management.
+Do not claim live production scale, real-time WebSocket coverage, or uptime metrics until those acceptance tests have been run and documented.

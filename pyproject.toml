@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dhan-data-lake"
+version = "0.1.0"
+description = "Credential-free market-data ingestion reference implementation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "psycopg[binary]>=3.1,<4",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+]
+
+[project.scripts]
+dhan-lake = "dhan_data_lake.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+dhan_data_lake = ["sql/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

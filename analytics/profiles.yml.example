@@ -1,0 +1,12 @@
+dhan_market_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: dhan
+      password: local_only_change_me
+      dbname: dhan_lake
+      schema: analytics
+      threads: 2

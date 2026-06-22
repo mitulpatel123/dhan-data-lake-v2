@@ -43,7 +43,7 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 python -m dhan_data_lake.cli --input data/sample/market_bars.csv --dry-run
-python -m unittest discover -s tests -v
+python -m pytest -q
 ```
 
 The dry run validates, deduplicates, and reports the sample data without requiring PostgreSQL or DhanHQ credentials.
@@ -83,7 +83,7 @@ The project is ready to describe as completed only when all of the following pas
 
 ```bash
 python -m compileall -q src tests
-python -m unittest discover -s tests -v
+python -m pytest -q
 docker compose config
 ```
 

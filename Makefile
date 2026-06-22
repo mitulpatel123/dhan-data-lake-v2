@@ -2,7 +2,7 @@
 
 test:
 	python -m compileall -q src tests
-	python -m unittest discover -s tests -v
+	python -m pytest -q
 
 dry-run:
 	python -m dhan_data_lake.cli --input data/sample/market_bars.csv --dry-run

@@ -22,6 +22,7 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -53,12 +54,19 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Data files
-*.csv
+# Data files. Keep the credential-free sample; ignore generated or private data.
 *.json
 *.parquet
-data/
+data/*
+!data/sample/
+!data/sample/*.csv
 temp/
 
 # Database files
 *.db
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+target/
+logs/

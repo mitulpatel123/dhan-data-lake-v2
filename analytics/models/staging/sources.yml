@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: public
+    tables:
+      - name: raw_market_bars
+        description: Validated and idempotently loaded OHLCV bars.
+        columns:
+          - name: security_id
+            tests: [not_null]
+          - name: event_time
+            tests: [not_null]

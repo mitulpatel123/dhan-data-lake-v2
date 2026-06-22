@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: fct_daily_market_summary
+    description: One row per security and trading date.
+    columns:
+      - name: security_id
+        tests: [not_null]
+      - name: trading_date
+        tests: [not_null]
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [security_id, trading_date]

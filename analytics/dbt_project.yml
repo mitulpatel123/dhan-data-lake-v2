@@ -1,0 +1,14 @@
+name: dhan_market_analytics
+version: "1.0.0"
+config-version: 2
+profile: dhan_market_analytics
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  dhan_market_analytics:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

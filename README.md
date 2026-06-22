@@ -41,7 +41,7 @@ Python 3.11+ is required.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e .
+python -m pip install -e '.[dev]'
 python -m dhan_data_lake.cli --input data/sample/market_bars.csv --dry-run
 python -m pytest -q
 ```
